@@ -1,0 +1,24 @@
+from django.shortcuts import render_to_response
+from forms import PostingForm
+from django.http import HttpResponseRedirect, HttpResponse
+from django.core.context_processors import csrf
+from profilepage.models import posts
+from django.contrib import auth
+
+
+def create(request):
+	if request.POST:
+		form = PostingForm(request.POST)
+		if form.is_valid() and request.user.is_authenticated():
+			obj = form.save(commit=False)
+			obj.username = request.user
+			obj.save()
+	return HttpResponseRedirect('/')
+	
+def home(request):
+	args = {}
+	args.update(csrf(request))
+	args['form'] = PostingForm()
+	args['posts'] = posts.objects.all()
+	args['user'] = request.user
+	return render_to_response('profile.html', args )
